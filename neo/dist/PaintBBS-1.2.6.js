@@ -1,13 +1,5 @@
+(function () {
 'use strict';
-
-document.addEventListener("DOMContentLoaded", function() {
-    Neo.init();
-
-    if (!navigator.userAgent.match("Electron")) {
-        Neo.start();
-    }
-});
-
 
 var Neo = function() {};
 
@@ -316,12 +308,6 @@ Neo.initComponents = function() {
 
     // 投稿に失敗する可能性があるときは警告を表示する
     Neo.showWarning();
-
-    if (Neo.styleSheet) {
-        Neo.addRule("*", "user-select", "none");
-        Neo.addRule("*", "-webkit-user-select", "none");
-        Neo.addRule("*", "-ms-user-select", "none");
-    }
 }
 
 Neo.initButtons = function() {
@@ -559,11 +545,11 @@ Neo.resizeCanvas = function() {
     Neo.canvas.style.width = width + "px";
     Neo.canvas.style.height = height + "px";
 
-    var top  = (Neo.container.clientHeight - toolsWrapper.clientHeight) / 2;
+    var top  = (Neo.container.clientHeight - Neo.toolsWrapper.clientHeight) / 2;
     Neo.toolsWrapper.style.top = ((top > 0) ? top : 0) + "px";
 
     if (top < 0) {
-        var s = Neo.container.clientHeight / toolsWrapper.clientHeight;
+        var s = Neo.container.clientHeight / Neo.toolsWrapper.clientHeight;
         Neo.toolsWrapper.style.transform =
             "translate(0, " + top + "px) scale(1," + s + ")";
     } else {
@@ -742,8 +728,6 @@ Neo.createContainer = function(applet) {
     neo.className = "NEO";
     neo.id = "NEO";
     var html = (function() {/*
-
-<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
 
 <div id="pageView" style="width:450px; height:470px; margin:auto;">
 <div id="container" style="visibility:hidden;">
@@ -1207,8 +1191,8 @@ Neo.Painter.prototype._initCanvas = function(div, width, height) {
     //    e.preventDefault();
     //});
     
-    document.onkeydown = function(e) {ref._keyDownHandler(e)};
-    document.onkeyup = function(e) {ref._keyUpHandler(e)};
+    document.addEventListener("keydown", function(e) {ref._keyDownHandler(e)});
+    document.addEventListener("keyup", function(e) {ref._keyUpHandler(e)});
 
     this.updateDestCanvas(0, 0, this.canvasWidth, this.canvasHeight);
 };
@@ -1324,6 +1308,9 @@ Neo.Painter.prototype.updateInputText = function() {
 */
 
 Neo.Painter.prototype._keyDownHandler = function(e) {
+    if (!document.paintBBSRunning) {
+        return;
+    }
     this.isShiftDown = e.shiftKey;
     this.isCtrlDown = e.ctrlKey;
     this.isAltDown = e.altKey;
@@ -1352,6 +1339,9 @@ Neo.Painter.prototype._keyDownHandler = function(e) {
 };
 
 Neo.Painter.prototype._keyUpHandler = function(e) {
+    if (!document.paintBBSRunning) {
+        return;
+    }
     this.isShiftDown = e.shiftKey;
     this.isCtrlDown = e.ctrlKey;
     this.isAltDown = e.altKey;
@@ -1694,7 +1684,7 @@ Neo.Painter.prototype.submit = function(board) {
             thumbnail2 = this.getThumbnail(Neo.config.thumbnail_type2);
         }
     }
-    Neo.submit(board, this.getPNG(), thumbnail2, thumbnail);
+    document.paintBBSSubmit(board, this.getPNG(), thumbnail2, thumbnail);
 };
 
 Neo.Painter.prototype.useThumbnail = function() {
@@ -5819,4 +5809,4 @@ Neo.ScrollBarButton.prototype.update = function(oe) {
         this.barButton.style.top = Math.floor(barY) + "px";
     }
 };
-
+})();
